@@ -139,10 +139,7 @@ public class HotelController {
 	                       ModelMap m,
 	                       HttpServletRequest request) {
 		
-		 if (!isLoggedIn(request, "hotelUser")) {
-	            return "redirect:/";
-	        }
-		 
+
 		Hdata h=new Hdata();
 		h.setHusername(husername);
 		h.setHname(hname);
@@ -163,9 +160,7 @@ public class HotelController {
 	                       ModelMap m,
 	                       HttpServletRequest request) {
 		
-		 if (!isLoggedIn(request, "hotelUser")) {
-	            return "redirect:/";
-	        }
+
 		 
 		String avl="available";
 		Rooms r=new Rooms();
@@ -252,6 +247,7 @@ public class HotelController {
 	public String cust_signup(@RequestParam("cusername") String cusername,
 								@RequestParam("cemail") String cemail,
 								@RequestParam("cpassword") String cpassword,ModelMap m) {
+		
 		Optional<Clogin> exist = crepo.findById(cusername);
 
 	    if (exist.isPresent()) {
@@ -273,7 +269,13 @@ public class HotelController {
 	@GetMapping("/cust_home/{cusername}")
 	public String custHome(@PathVariable String cusername, 
 	                      @RequestParam(required = false) String city, 
-	                      ModelMap m) {
+	                      ModelMap m,
+	                      HttpServletRequest request) {
+		
+		if (!isLoggedIn(request, "custUser")) {
+            return "redirect:/";
+        }
+		
 	    List<Hdata> hdata;
 
 	    if (city != null && !city.isEmpty()) {
@@ -299,7 +301,12 @@ public class HotelController {
 	@GetMapping("/cust_home/{cusername}/{hdid}")
 	public String showBookingForm(@PathVariable String cusername, 
 	                            @PathVariable int hdid, 
-	                            ModelMap m) {
+	                            ModelMap m,
+	                            HttpServletRequest request) {
+		
+		if (!isLoggedIn(request, "custUser")) {
+            return "redirect:/";
+        }
 	    Optional<Hdata> hotel = hrepo2.findById(hdid);
 	    if(hotel.isPresent()) {
 	        m.addAttribute("hdata", hotel.get());
@@ -316,7 +323,9 @@ public class HotelController {
 	                           @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fromDate,
 	                           @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate toDate,
 	                           @RequestParam int guests,
-	                           ModelMap m) {
+	                           ModelMap m,
+	                           HttpServletRequest request) {
+
 	    
 	    if(fromDate.isAfter(toDate) || fromDate.isBefore(LocalDate.now())) {
 	        m.addAttribute("error", "Invalid date selection");
@@ -363,7 +372,11 @@ public class HotelController {
 	}
 	
 	@GetMapping("/cust_home/{cusername}/bookings")
-	public String viewBookings(@PathVariable String cusername, ModelMap m) {
+	public String viewBookings(@PathVariable String cusername, ModelMap m,HttpServletRequest request) {
+		
+		if (!isLoggedIn(request, "custUser")) {
+            return "redirect:/";
+        }
 	    List<Bookings> bookings = bookingRepo.findByCusernameOrderByFromDateDesc(cusername);
 	    
 	    // Fetch hotel and room details for each booking
@@ -387,7 +400,9 @@ public class HotelController {
 	@PostMapping("/cust_home/{cusername}/bookings/{booking_id}/cancel")
 	public String cancelBooking(@PathVariable String cusername,
 	                          @PathVariable int booking_id,
-	                          ModelMap m) {
+	                          ModelMap m,
+	                          HttpServletRequest request) {
+
 	    Optional<Bookings> bookingOpt = bookingRepo.findById(booking_id);
 	    
 	    if (bookingOpt.isPresent()) {
@@ -417,8 +432,9 @@ public class HotelController {
 	                        @RequestParam String hlocation,
 	                        @RequestParam int p_ac,
 	                        @RequestParam int p_nac,
-	                        ModelMap m) {
-	    
+	                        ModelMap m,
+	                        HttpServletRequest request) {
+
 	    Optional<Hdata> existingHdata = hrepo2.findById(hdid);
 	    
 	    if (existingHdata.isPresent()) {
